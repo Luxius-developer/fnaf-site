@@ -1,28 +1,83 @@
-body {
-  margin: 0;
-  background: #111;
-  color: #fff;
-  font-family: 'Courier New', monospace;
-  display: flex; justify-content: center; align-items: center; min-height: 100vh;
-}
-#app {
-  text-align: center;
-  max-width: 600px;
-  padding: 20px;
-}
-input, button {
-  display: block;
-  margin: 10px auto;
-  padding: 10px 20px;
-  font-size: 18px;
-  font-family: inherit;
-}
-button {
-  background: #c0392b;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  width: 200px;
-}
-button:hover { background: #e74c3c; }
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Five Nights at Freddy's – Меню</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="app">
+    <div id="auth-section">
+      <h1>Five Nights at Freddy's</h1>
+      <input type="text" id="username" placeholder="Логин">
+      <input type="password" id="password" placeholder="Пароль">
+      <button id="login-btn">Войти</button>
+      <button id="register-btn">Зарегистрироваться</button>
+      <p id="auth-message"></p>
+    </div>
+    <div id="menu-section" style="display:none;">
+      <h2>Привет, <span id="display-username"></span>!</h2>
+      <p>Монеты: <span id="display-coins">0</span></p>
+      <button id="new-game-btn">Новая игра</button>
+      <button id="continue-btn">Продолжить</button>
+      <button id="leaderboard-btn">Рекорды</button>
+      <button id="shop-btn">Магазин</button>
+      <button id="admin-btn" style="display:none;">Админ-панель</button>
+      <button id="logout-btn">Выйти</button>
+    </div>
+  </div>
+  <script src="js/api.js"></script>
+  <script>
+    const api = window.FNAF_API;
+
+    async function checkAuth() {
+      const user = JSON.parse(localStorage.getItem('currentUser'));
+      if (user) {
+        document.getElementById('auth-section').style.display = 'none';
+        document.getElementById('menu-section').style.display = 'block';
+        document.getElementById('display-username').textContent = user.username;
+        document.getElementById('display-coins').textContent = user.coins ?? 0;
+        if (user.role === 'admin') {
+          document.getElementById('admin-btn').style.display = 'inline-block';
+        }
+      }
+    }
+
+    document.getElementById('login-btn').addEventListener('click', async () => {
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+      if (!username || !password) return alert('Заполните поля');
+      try {
+        const res = await api.login(username, password);
+        localStorage.setItem('currentUser', JSON.stringify(res.user));
+        checkAuth();
+      } catch(e) { document.getElementById('auth-message').textContent = e.message; }
+    });
+
+    document.getElementById('register-btn').addEventListener('click', async () => {
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+      if (!username || !password) return alert('Заполните поля');
+      try {
+        const res = await api.register(username, password);
+        localStorage.setItem('currentUser', JSON.stringify(res.user));
+        checkAuth();
+      } catch(e) { document.getElementById('auth-message').textContent = e.message; }
+    });
+
+    document.getElementById('logout-btn').addEventListener('click', () => {
+      localStorage.removeItem('currentUser');
+      location.reload();
+    });
+
+    document.getElementById('new-game-btn').addEventListener('click', () => location.href = 'game.html?new=1');
+    document.getElementById('continue-btn').addEventListener('click', () => location.href = 'game.html');
+    document.getElementById('leaderboard-btn').addEventListener('click', () => location.href = 'leaderboard.html');
+    document.getElementById('shop-btn').addEventListener('click', () => location.href = 'shop.html');
+    document.getElementById('admin-btn').addEventListener('click', () => location.href = 'admin.html');
+
+    checkAuth();
+  </script>
+</body>
+</html>
