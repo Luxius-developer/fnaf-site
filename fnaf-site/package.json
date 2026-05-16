@@ -1,9 +1,0 @@
-{
-  "name": "fnaf-site",
-  "version": "1.0.0",
-  "description": "Five Nights at Freddy's online game",
-  "dependencies": {
-    "bcryptjs": "^2.4.3",
-    "pg": "^8.11.3"
-  }
-}
